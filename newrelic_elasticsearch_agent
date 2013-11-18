@@ -7,6 +7,7 @@ require 'net/http'
 require 'uri'
 require 'socket'
 require 'json'
+require 'optparse'
 
 module ElasticsearchStatsAgent
 
@@ -114,7 +115,17 @@ module ElasticsearchStatsAgent
     end
   end
 
-  NewRelic::Plugin::Config.config_file = File.dirname(__FILE__) + '/config/newrelic_plugin.yml'
+  options = {}
+
+  OptionParser.new do |opts|
+    opts.banner = 'Usage: [options]'
+    options[:config] = File.dirname(__FILE__) + '/config/newrelic_plugin.yml'
+    opts.on('--config FILE') do |file|
+      options[:config] = file
+    end
+  end.parse!
+
+  NewRelic::Plugin::Config.config_file = options[:config]
   NewRelic::Plugin::Setup.install_agent :elasticsearch_stats_agent, self
 
   NewRelic::Plugin::Run.setup_and_run
